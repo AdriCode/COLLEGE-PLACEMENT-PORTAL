@@ -12,7 +12,7 @@ router.post('/', auth, requireRole('recruiter'), async (req, res) => {
     if (!recruiterProfile || !recruiterProfile.approved) {
       return res.status(403).json({ error: 'Only approved recruiters can post jobs.' });
     }
-    const { title, description, eligibility, deadline } = req.body;
+    const { title, description, eligibility, minCgpa, deadline } = req.body;
     if (!title) {
       return res.status(400).json({ error: 'Title is required.' });
     }
@@ -21,6 +21,7 @@ router.post('/', auth, requireRole('recruiter'), async (req, res) => {
       title,
       description: description || '',
       eligibility: eligibility || '',
+      minCgpa: minCgpa != null && minCgpa !== '' ? Number(minCgpa) : undefined,
       deadline: deadline ? new Date(deadline) : undefined,
     });
     await job.save();

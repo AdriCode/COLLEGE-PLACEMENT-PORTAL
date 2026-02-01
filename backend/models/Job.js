@@ -9,6 +9,7 @@ const jobSchema = new mongoose.Schema({
   title: { type: String, required: true, trim: true },
   description: { type: String, trim: true },
   eligibility: { type: String, trim: true },
+  minCgpa: { type: Number, min: 0, max: 10 },
   deadline: { type: Date },
 }, { timestamps: true });
 

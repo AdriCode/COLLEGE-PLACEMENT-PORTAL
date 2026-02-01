@@ -7,6 +7,7 @@ export default function NewJob() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [eligibility, setEligibility] = useState('');
+  const [minCgpa, setMinCgpa] = useState('');
   const [deadline, setDeadline] = useState('');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -18,7 +19,7 @@ export default function NewJob() {
     try {
       await api('/jobs', {
         method: 'POST',
-        body: JSON.stringify({ title, description, eligibility, deadline: deadline || undefined }),
+        body: JSON.stringify({ title, description, eligibility, minCgpa: minCgpa ? Number(minCgpa) : undefined, deadline: deadline || undefined }),
       });
       navigate('/my-jobs');
     } catch (err) {
@@ -44,6 +45,10 @@ export default function NewJob() {
         <div style={{ marginBottom: 16 }}>
           <label style={{ display: 'block', marginBottom: 4 }}>Eligibility</label>
           <input value={eligibility} onChange={(e) => setEligibility(e.target.value)} style={{ width: '100%', padding: 8 }} placeholder="e.g. CGPA >= 7.5" />
+        </div>
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ display: 'block', marginBottom: 4 }}>Minimum CGPA</label>
+          <input type="number" min="0" max="10" step="0.01" value={minCgpa} onChange={(e) => setMinCgpa(e.target.value)} style={{ width: '100%', padding: 8 }} placeholder="e.g. 7.5 (optional)" />
         </div>
         <div style={{ marginBottom: 16 }}>
           <label style={{ display: 'block', marginBottom: 4 }}>Deadline</label>

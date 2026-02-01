@@ -8,6 +8,8 @@ export default function JobDetail() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [job, setJob] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [profileFetched, setProfileFetched] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [applying, setApplying] = useState(false);
@@ -18,6 +20,17 @@ export default function JobDetail() {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, [id]);
+
+  useEffect(() => {
+    if (user?.role !== 'student') {
+      setProfileFetched(true);
+      return;
+    }
+    api('/students/profile')
+      .then(setProfile)
+      .catch(() => setProfile(null))
+      .finally(() => setProfileFetched(true));
+  }, [user?.role]);
 
   const handleApply = async () => {
     setError('');
@@ -32,6 +45,11 @@ export default function JobDetail() {
     }
   };
 
+  const hasMinCgpa = job != null && job.minCgpa != null;
+  const studentCgpa = profile?.cgpa;
+  const eligibleByCgpa = !hasMinCgpa || (studentCgpa != null && studentCgpa >= job.minCgpa);
+  const showNotEligible = user?.role === 'student' && profileFetched && hasMinCgpa && !eligibleByCgpa;
+
   if (loading) return <div style={{ padding: 24 }}>Loading...</div>;
   if (error && !job) return <div style={{ padding: 24, color: 'red' }}>{error}</div>;
   if (!job) return null;
@@ -42,11 +60,17 @@ export default function JobDetail() {
       <h1>{job.title}</h1>
       {job.description && <p>{job.description}</p>}
       {job.eligibility && <p><strong>Eligibility:</strong> {job.eligibility}</p>}
+      {job.minCgpa != null && <p><strong>Minimum CGPA:</strong> {job.minCgpa}</p>}
       {job.deadline && <p><strong>Deadline:</strong> {new Date(job.deadline).toLocaleDateString()}</p>}
+      {showNotEligible && (
+        <p style={{ color: '#c00', fontWeight: 'bold', marginTop: 12 }}>
+          Not eligible: minimum CGPA required is {job.minCgpa}.{studentCgpa != null ? ` Your CGPA is ${studentCgpa}.` : ' Add your CGPA in Profile.'}
+        </p>
+      )}
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {user?.role === 'student' && (
-        <button type="button" onClick={handleApply} disabled={applying} style={{ marginTop: 16, padding: '10px 20px', cursor: applying ? 'not-allowed' : 'pointer' }}>
-          {applying ? 'Applying...' : 'Apply'}
+        <button type="button" onClick={handleApply} disabled={applying || showNotEligible} style={{ marginTop: 16, padding: '10px 20px', cursor: applying || showNotEligible ? 'not-allowed' : 'pointer' }}>
+          {applying ? 'Applying...' : showNotEligible ? 'Not eligible' : 'Apply'}
         </button>
       )}
       {user?.role === 'recruiter' && String(job.recruiterId) === user.id && (
