@@ -20,15 +20,21 @@ router.get('/profile', async (req, res) => {
   }
 });
 
+const ALLOWED_BRANCHES = ['CS', 'IT', 'SE', 'MCE', 'ECE', 'EE', 'ME', 'PIE', 'CE', 'ENE', 'BT'];
+
 router.put('/profile', async (req, res) => {
   try {
     const { name, branch, cgpa, resumeUrl } = req.body;
+    const branchVal = branch === '' || branch === undefined ? undefined : String(branch).trim().toUpperCase();
+    if (branchVal && !ALLOWED_BRANCHES.includes(branchVal)) {
+      return res.status(400).json({ error: `Branch must be one of: ${ALLOWED_BRANCHES.join(', ')}` });
+    }
     let profile = await StudentProfile.findOne({ userId: req.user.id });
     if (!profile) {
-      profile = new StudentProfile({ userId: req.user.id, name: name || '', branch, cgpa, resumeUrl });
+      profile = new StudentProfile({ userId: req.user.id, name: name || '', branch: branchVal, cgpa, resumeUrl });
     } else {
       if (name !== undefined) profile.name = name;
-      if (branch !== undefined) profile.branch = branch;
+      if (branch !== undefined) profile.branch = branchVal;
       if (cgpa !== undefined) profile.cgpa = cgpa;
       if (resumeUrl !== undefined) profile.resumeUrl = resumeUrl;
     }

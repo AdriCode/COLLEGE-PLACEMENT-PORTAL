@@ -8,7 +8,7 @@ const studentProfileSchema = new mongoose.Schema({
     unique: true,
   },
   name: { type: String, required: true, trim: true },
-  branch: { type: String, trim: true },
+  branch: { type: String, trim: true, enum: ['CS', 'IT', 'SE', 'MCE', 'ECE', 'EE', 'ME', 'PIE', 'CE', 'ENE', 'BT'] },
   cgpa: { type: Number },
   resumeUrl: { type: String, trim: true },
 }, { timestamps: true });

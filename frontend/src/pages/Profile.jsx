@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api';
+import { BRANCHES } from '../constants/branches';
 
 export default function Profile() {
   const { user } = useAuth();
@@ -70,7 +71,12 @@ export default function Profile() {
             </div>
             <div style={{ marginBottom: 16 }}>
               <label style={{ display: 'block', marginBottom: 4 }}>Branch</label>
-              <input value={form.branch} onChange={(e) => setForm((f) => ({ ...f, branch: e.target.value }))} style={{ width: '100%', padding: 8 }} />
+              <select value={form.branch} onChange={(e) => setForm((f) => ({ ...f, branch: e.target.value }))} style={{ width: '100%', padding: 8 }}>
+                <option value="">Select branch</option>
+                {BRANCHES.map((b) => (
+                  <option key={b} value={b}>{b}</option>
+                ))}
+              </select>
             </div>
             <div style={{ marginBottom: 16 }}>
               <label style={{ display: 'block', marginBottom: 4 }}>CGPA</label>

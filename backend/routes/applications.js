@@ -16,12 +16,21 @@ router.post('/', auth, requireRole('student'), async (req, res) => {
     if (!job) {
       return res.status(404).json({ error: 'Job not found.' });
     }
+    const profile = await StudentProfile.findOne({ userId: req.user.id });
     if (job.minCgpa != null) {
-      const profile = await StudentProfile.findOne({ userId: req.user.id });
       const studentCgpa = profile?.cgpa;
       if (studentCgpa == null || studentCgpa < job.minCgpa) {
         return res.status(403).json({
           error: `Not eligible: minimum CGPA required is ${job.minCgpa}.${studentCgpa != null ? ` Your CGPA is ${studentCgpa}.` : ' Update your profile with CGPA.'}`,
+        });
+      }
+    }
+    if (job.eligibleBranches != null && job.eligibleBranches.length > 0) {
+      const studentBranch = profile?.branch ? String(profile.branch).trim().toUpperCase() : null;
+      const allowed = job.eligibleBranches.map((b) => String(b).trim().toUpperCase());
+      if (!studentBranch || !allowed.includes(studentBranch)) {
+        return res.status(403).json({
+          error: `Not eligible: this job is for branches: ${job.eligibleBranches.join(', ')}.${studentBranch ? ` Your branch is ${profile.branch}.` : ' Add your branch in Profile.'}`,
         });
       }
     }

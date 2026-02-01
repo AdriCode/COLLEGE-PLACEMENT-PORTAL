@@ -43,13 +43,21 @@ export default function Jobs() {
             const hasMinCgpa = job.minCgpa != null;
             const studentCgpa = profile?.cgpa;
             const notEligibleByCgpa = user?.role === 'student' && profileFetched && hasMinCgpa && (studentCgpa == null || studentCgpa < job.minCgpa);
+            const hasEligibleBranches = Array.isArray(job.eligibleBranches) && job.eligibleBranches.length > 0;
+            const studentBranch = profile?.branch ? String(profile.branch).trim().toUpperCase() : null;
+            const allowedBranches = hasEligibleBranches ? job.eligibleBranches.map((b) => String(b).trim().toUpperCase()) : [];
+            const notEligibleByBranch = user?.role === 'student' && profileFetched && hasEligibleBranches && (!studentBranch || !allowedBranches.includes(studentBranch));
+            const notEligible = notEligibleByCgpa || notEligibleByBranch;
             return (
               <li key={job._id} style={{ marginBottom: 16, padding: 16, background: 'white', borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
                 <Link to={`/jobs/${job._id}`} style={{ fontWeight: 'bold', fontSize: 18 }}>{job.title}</Link>
                 {job.eligibility && <p style={{ margin: '8px 0 0', color: '#666' }}>Eligibility: {job.eligibility}</p>}
                 {job.minCgpa != null && <p style={{ margin: '4px 0 0', color: '#666' }}>Min CGPA: {job.minCgpa}</p>}
-                {notEligibleByCgpa && (
-                  <span style={{ display: 'inline-block', marginTop: 8, padding: '4px 8px', background: '#fee', color: '#c00', borderRadius: 4, fontSize: 14 }}>Not eligible (CGPA)</span>
+                {hasEligibleBranches && <p style={{ margin: '4px 0 0', color: '#666' }}>Branches: {job.eligibleBranches.join(', ')}</p>}
+                {notEligible && (
+                  <span style={{ display: 'inline-block', marginTop: 8, padding: '4px 8px', background: '#fee', color: '#c00', borderRadius: 4, fontSize: 14 }}>
+                    Not eligible{notEligibleByCgpa && notEligibleByBranch ? ' (CGPA & branch)' : notEligibleByCgpa ? ' (CGPA)' : ' (branch)'}
+                  </span>
                 )}
               </li>
             );

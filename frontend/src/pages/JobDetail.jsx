@@ -48,7 +48,13 @@ export default function JobDetail() {
   const hasMinCgpa = job != null && job.minCgpa != null;
   const studentCgpa = profile?.cgpa;
   const eligibleByCgpa = !hasMinCgpa || (studentCgpa != null && studentCgpa >= job.minCgpa);
-  const showNotEligible = user?.role === 'student' && profileFetched && hasMinCgpa && !eligibleByCgpa;
+  const hasEligibleBranches = job != null && Array.isArray(job.eligibleBranches) && job.eligibleBranches.length > 0;
+  const studentBranch = profile?.branch ? String(profile.branch).trim().toUpperCase() : null;
+  const allowedBranches = hasEligibleBranches ? job.eligibleBranches.map((b) => String(b).trim().toUpperCase()) : [];
+  const eligibleByBranch = !hasEligibleBranches || (studentBranch && allowedBranches.includes(studentBranch));
+  const showNotEligibleCgpa = user?.role === 'student' && profileFetched && hasMinCgpa && !eligibleByCgpa;
+  const showNotEligibleBranch = user?.role === 'student' && profileFetched && hasEligibleBranches && !eligibleByBranch;
+  const showNotEligible = showNotEligibleCgpa || showNotEligibleBranch;
 
   if (loading) return <div style={{ padding: 24 }}>Loading...</div>;
   if (error && !job) return <div style={{ padding: 24, color: 'red' }}>{error}</div>;
@@ -61,10 +67,16 @@ export default function JobDetail() {
       {job.description && <p>{job.description}</p>}
       {job.eligibility && <p><strong>Eligibility:</strong> {job.eligibility}</p>}
       {job.minCgpa != null && <p><strong>Minimum CGPA:</strong> {job.minCgpa}</p>}
+      {hasEligibleBranches && <p><strong>Eligible branches:</strong> {job.eligibleBranches.join(', ')}</p>}
       {job.deadline && <p><strong>Deadline:</strong> {new Date(job.deadline).toLocaleDateString()}</p>}
-      {showNotEligible && (
+      {showNotEligibleCgpa && (
         <p style={{ color: '#c00', fontWeight: 'bold', marginTop: 12 }}>
           Not eligible: minimum CGPA required is {job.minCgpa}.{studentCgpa != null ? ` Your CGPA is ${studentCgpa}.` : ' Add your CGPA in Profile.'}
+        </p>
+      )}
+      {showNotEligibleBranch && (
+        <p style={{ color: '#c00', fontWeight: 'bold', marginTop: 12 }}>
+          Not eligible: this job is for branches {job.eligibleBranches.join(', ')}.{studentBranch ? ` Your branch is ${profile.branch}.` : ' Add your branch in Profile.'}
         </p>
       )}
       {error && <p style={{ color: 'red' }}>{error}</p>}

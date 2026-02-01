@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
+import { BRANCHES } from '../constants/branches';
 
 export default function NewJob() {
   const navigate = useNavigate();
@@ -8,9 +9,16 @@ export default function NewJob() {
   const [description, setDescription] = useState('');
   const [eligibility, setEligibility] = useState('');
   const [minCgpa, setMinCgpa] = useState('');
+  const [eligibleBranches, setEligibleBranches] = useState([]);
   const [deadline, setDeadline] = useState('');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+
+  const toggleBranch = (branch) => {
+    setEligibleBranches((prev) =>
+      prev.includes(branch) ? prev.filter((b) => b !== branch) : [...prev, branch]
+    );
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,7 +27,14 @@ export default function NewJob() {
     try {
       await api('/jobs', {
         method: 'POST',
-        body: JSON.stringify({ title, description, eligibility, minCgpa: minCgpa ? Number(minCgpa) : undefined, deadline: deadline || undefined }),
+        body: JSON.stringify({
+          title,
+          description,
+          eligibility,
+          minCgpa: minCgpa ? Number(minCgpa) : undefined,
+          eligibleBranches: eligibleBranches.length ? eligibleBranches : undefined,
+          deadline: deadline || undefined,
+        }),
       });
       navigate('/my-jobs');
     } catch (err) {
@@ -49,6 +64,17 @@ export default function NewJob() {
         <div style={{ marginBottom: 16 }}>
           <label style={{ display: 'block', marginBottom: 4 }}>Minimum CGPA</label>
           <input type="number" min="0" max="10" step="0.01" value={minCgpa} onChange={(e) => setMinCgpa(e.target.value)} style={{ width: '100%', padding: 8 }} placeholder="e.g. 7.5 (optional)" />
+        </div>
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ display: 'block', marginBottom: 8 }}>Eligible branches (leave empty = all)</label>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {BRANCHES.map((b) => (
+              <label key={b} style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
+                <input type="checkbox" checked={eligibleBranches.includes(b)} onChange={() => toggleBranch(b)} />
+                <span>{b}</span>
+              </label>
+            ))}
+          </div>
         </div>
         <div style={{ marginBottom: 16 }}>
           <label style={{ display: 'block', marginBottom: 4 }}>Deadline</label>
