@@ -61,7 +61,6 @@ export default function Register() {
           <select value={role} onChange={(e) => setRole(e.target.value)} style={{ width: '100%', padding: 8 }}>
             <option value="student">Student</option>
             <option value="recruiter">Recruiter</option>
-            <option value="admin">Admin</option>
           </select>
         </div>
         <button type="submit" disabled={loading} style={{ padding: '10px 20px', cursor: loading ? 'not-allowed' : 'pointer' }}>

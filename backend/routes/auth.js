@@ -10,8 +10,8 @@ router.post('/register', async (req, res) => {
     if (!email || !password || !role) {
       return res.status(400).json({ error: 'Email, password and role are required.' });
     }
-    if (!['student', 'recruiter', 'admin'].includes(role)) {
-      return res.status(400).json({ error: 'Role must be student, recruiter or admin.' });
+    if (!['student', 'recruiter'].includes(role)) {
+      return res.status(400).json({ error: 'Role must be student or recruiter.' });
     }
     const existing = await User.findOne({ email });
     if (existing) {

@@ -13,7 +13,7 @@ A minimal full-stack placement portal: React + Node/Express + MongoDB + JWT.
    npm install
    npm start
    ```
-   Server runs on http://localhost:5000.
+   Server runs on http://localhost:5001.
 
 3. **Frontend**
    ```bash
