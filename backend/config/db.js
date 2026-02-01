@@ -5,14 +5,19 @@ const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
     console.log('MongoDB connected');
-    // Create default admin from env if none exists
-    const adminEmail = process.env.ADMIN_EMAIL;
+    // Ensure fixed admin from env: create or reset password so login always works
+    const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
     const adminPassword = process.env.ADMIN_PASSWORD;
     if (adminEmail && adminPassword) {
-      const existingAdmin = await User.findOne({ role: 'admin' });
-      if (!existingAdmin) {
+      let admin = await User.findOne({ email: adminEmail }).select('+password');
+      if (!admin) {
         await User.create({ email: adminEmail, password: adminPassword, role: 'admin' });
-        console.log('Default admin user created');
+        console.log('Default admin user created:', adminEmail);
+      } else {
+        admin.role = 'admin';
+        admin.password = adminPassword;
+        await admin.save();
+        console.log('Admin credentials synced for', adminEmail);
       }
     }
   } catch (err) {
